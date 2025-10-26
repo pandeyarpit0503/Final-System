@@ -48,7 +48,7 @@ const Cart = () => {
                 <CardContent className="p-4">
                   <div className="flex gap-4">
                     <div className="w-24 h-24 rounded-lg bg-muted overflow-hidden flex-shrink-0">
-                      <img src="/placeholder.svg" alt={item.name} className="w-full h-full object-cover" />
+                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                     
                     <div className="flex-1">

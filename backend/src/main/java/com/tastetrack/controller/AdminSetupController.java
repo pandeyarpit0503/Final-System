@@ -180,6 +180,50 @@ public class AdminSetupController {
             greens.setIsOpen(true);
             restaurants.add(greens);
 
+            Restaurant tacos = new Restaurant();
+            tacos.setName("Taco Fiesta");
+            tacos.setCuisine("Mexican");
+            tacos.setRating(4.4);
+            tacos.setDeliveryTime("20-30 min");
+            tacos.setMinOrder(10.00);
+            tacos.setImage("https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&h=600&fit=crop");
+            tacos.setAddress("567 Sunset Blvd, Westside");
+            tacos.setIsOpen(true);
+            restaurants.add(tacos);
+
+            Restaurant thai = new Restaurant();
+            thai.setName("Bangkok Street Kitchen");
+            thai.setCuisine("Thai");
+            thai.setRating(4.8);
+            thai.setDeliveryTime("25-35 min");
+            thai.setMinOrder(15.00);
+            thai.setImage("https://images.unsplash.com/photo-1559314809-0d155014e29e?w=800&h=600&fit=crop");
+            thai.setAddress("890 Market St, Chinatown");
+            thai.setIsOpen(true);
+            restaurants.add(thai);
+
+            Restaurant indian = new Restaurant();
+            indian.setName("Spice Palace");
+            indian.setCuisine("Indian");
+            indian.setRating(4.7);
+            indian.setDeliveryTime("30-40 min");
+            indian.setMinOrder(18.00);
+            indian.setImage("https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&h=600&fit=crop");
+            indian.setAddress("234 Curry Lane, Little India");
+            indian.setIsOpen(true);
+            restaurants.add(indian);
+
+            Restaurant bbq = new Restaurant();
+            bbq.setName("Smokey's BBQ Pit");
+            bbq.setCuisine("BBQ");
+            bbq.setRating(4.5);
+            bbq.setDeliveryTime("25-35 min");
+            bbq.setMinOrder(16.00);
+            bbq.setImage("https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop");
+            bbq.setAddress("456 Grill Ave, Smoketown");
+            bbq.setIsOpen(true);
+            restaurants.add(bbq);
+
             // Save restaurants
             restaurantRepository.saveAll(restaurants);
 
@@ -221,6 +265,42 @@ public class AdminSetupController {
             menuItems.add(createMenuItem("Salmon Poke Bowl", "Fresh salmon, edamame, seaweed, and sushi rice", 15.99, "https://images.unsplash.com/photo-1546069901-d5bfd2cbfb1f?w=500&h=400&fit=crop", "Bowls", greens, false, 4.9));
             menuItems.add(createMenuItem("Green Smoothie", "Spinach, banana, mango, and almond milk", 6.99, "https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=500&h=400&fit=crop", "Smoothies", greens, true, 4.5));
             menuItems.add(createMenuItem("Acai Bowl", "Acai blend topped with granola, berries, and honey", 10.99, "https://images.unsplash.com/photo-1590301157890-4810ed352733?w=500&h=400&fit=crop", "Bowls", greens, true, 4.7));
+
+            // Taco Fiesta - 7 dishes
+            menuItems.add(createMenuItem("Carne Asada Tacos", "Grilled steak with cilantro, onions, and lime", 11.99, "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=500&h=400&fit=crop", "Tacos", tacos, false, 4.7));
+            menuItems.add(createMenuItem("Fish Tacos", "Crispy battered fish with cabbage slaw and chipotle mayo", 12.99, "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=500&h=400&fit=crop", "Tacos", tacos, false, 4.6));
+            menuItems.add(createMenuItem("Chicken Quesadilla", "Grilled chicken, cheese, peppers, and onions", 10.99, "https://images.unsplash.com/photo-1618040996337-56904b7850b9?w=500&h=400&fit=crop", "Quesadillas", tacos, false, 4.5));
+            menuItems.add(createMenuItem("Beef Burrito", "Seasoned beef, rice, beans, cheese, and salsa", 13.99, "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=500&h=400&fit=crop", "Burritos", tacos, false, 4.8));
+            menuItems.add(createMenuItem("Veggie Enchiladas", "Corn tortillas filled with vegetables and cheese", 11.99, "https://images.unsplash.com/photo-1599974982760-3a9c4b58f6f1?w=500&h=400&fit=crop", "Enchiladas", tacos, true, 4.4));
+            menuItems.add(createMenuItem("Nachos Supreme", "Tortilla chips loaded with cheese, jalapeños, and sour cream", 9.99, "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?w=500&h=400&fit=crop", "Appetizers", tacos, true, 4.6));
+            menuItems.add(createMenuItem("Churros", "Fried dough pastry with cinnamon sugar and chocolate sauce", 6.99, "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=500&h=400&fit=crop", "Desserts", tacos, true, 4.7));
+
+            // Bangkok Street Kitchen - 7 dishes
+            menuItems.add(createMenuItem("Pad Thai", "Stir-fried rice noodles with shrimp, peanuts, and tamarind", 13.99, "https://images.unsplash.com/photo-1559314809-0d155014e29e?w=500&h=400&fit=crop", "Noodles", thai, false, 4.9));
+            menuItems.add(createMenuItem("Green Curry", "Spicy coconut curry with chicken and vegetables", 14.99, "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?w=500&h=400&fit=crop", "Curries", thai, false, 4.8));
+            menuItems.add(createMenuItem("Tom Yum Soup", "Hot and sour soup with shrimp and lemongrass", 10.99, "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=500&h=400&fit=crop", "Soups", thai, false, 4.7));
+            menuItems.add(createMenuItem("Massaman Curry", "Rich peanut curry with beef and potatoes", 15.99, "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=500&h=400&fit=crop", "Curries", thai, false, 4.8));
+            menuItems.add(createMenuItem("Spring Rolls", "Fresh vegetables wrapped in rice paper with peanut sauce", 8.99, "https://images.unsplash.com/photo-1594756202469-9ff9799b2e4e?w=500&h=400&fit=crop", "Appetizers", thai, true, 4.5));
+            menuItems.add(createMenuItem("Mango Sticky Rice", "Sweet sticky rice with fresh mango and coconut cream", 7.99, "https://images.unsplash.com/photo-1601887370915-c4a9b6b35b6f?w=500&h=400&fit=crop", "Desserts", thai, true, 4.6));
+            menuItems.add(createMenuItem("Drunken Noodles", "Spicy stir-fried wide noodles with basil and vegetables", 12.99, "https://images.unsplash.com/photo-1612874742237-6526221588e3?w=500&h=400&fit=crop", "Noodles", thai, true, 4.7));
+
+            // Spice Palace - 7 dishes
+            menuItems.add(createMenuItem("Chicken Tikka Masala", "Tender chicken in creamy tomato curry sauce", 14.99, "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=500&h=400&fit=crop", "Curries", indian, false, 4.9));
+            menuItems.add(createMenuItem("Butter Chicken", "Marinated chicken in rich butter and tomato sauce", 15.99, "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500&h=400&fit=crop", "Curries", indian, false, 4.8));
+            menuItems.add(createMenuItem("Lamb Biryani", "Fragrant basmati rice with spiced lamb and saffron", 16.99, "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500&h=400&fit=crop", "Rice", indian, false, 4.9));
+            menuItems.add(createMenuItem("Palak Paneer", "Spinach curry with cottage cheese cubes", 12.99, "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=500&h=400&fit=crop", "Curries", indian, true, 4.6));
+            menuItems.add(createMenuItem("Garlic Naan", "Soft flatbread with garlic and butter", 3.99, "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=500&h=400&fit=crop", "Breads", indian, true, 4.7));
+            menuItems.add(createMenuItem("Samosas", "Crispy pastries filled with spiced potatoes and peas", 6.99, "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=500&h=400&fit=crop", "Appetizers", indian, true, 4.5));
+            menuItems.add(createMenuItem("Gulab Jamun", "Sweet milk dumplings in rose-flavored syrup", 5.99, "https://images.unsplash.com/photo-1589301773859-34462d1743e8?w=500&h=400&fit=crop", "Desserts", indian, true, 4.8));
+
+            // Smokey's BBQ Pit - 7 dishes
+            menuItems.add(createMenuItem("Pulled Pork Platter", "Slow-smoked pulled pork with coleslaw and cornbread", 15.99, "https://images.unsplash.com/photo-1558030006-450675393462?w=500&h=400&fit=crop", "BBQ", bbq, false, 4.8));
+            menuItems.add(createMenuItem("Beef Brisket", "Texas-style smoked brisket with BBQ sauce", 18.99, "https://images.unsplash.com/photo-1544025162-d76694265947?w=500&h=400&fit=crop", "BBQ", bbq, false, 4.9));
+            menuItems.add(createMenuItem("BBQ Ribs", "Fall-off-the-bone baby back ribs with smoky glaze", 19.99, "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=500&h=400&fit=crop", "BBQ", bbq, false, 4.9));
+            menuItems.add(createMenuItem("Smoked Chicken Wings", "Crispy wings tossed in BBQ sauce", 11.99, "https://images.unsplash.com/photo-1608039829572-78524f79c4c7?w=500&h=400&fit=crop", "BBQ", bbq, false, 4.6));
+            menuItems.add(createMenuItem("Mac and Cheese", "Creamy baked macaroni with three cheeses", 7.99, "https://images.unsplash.com/photo-1543339494-b4cd4f7ba686?w=500&h=400&fit=crop", "Sides", bbq, true, 4.7));
+            menuItems.add(createMenuItem("Cornbread", "Sweet and moist cornbread with honey butter", 4.99, "https://images.unsplash.com/photo-1618897996318-5a901fa6ca71?w=500&h=400&fit=crop", "Sides", bbq, true, 4.5));
+            menuItems.add(createMenuItem("Pecan Pie", "Classic Southern pecan pie with vanilla ice cream", 6.99, "https://images.unsplash.com/photo-1507066274042-8a683a1e6ffe?w=500&h=400&fit=crop", "Desserts", bbq, true, 4.8));
 
             // Save all menu items
             menuItemRepository.saveAll(menuItems);
