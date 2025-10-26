@@ -1,13 +1,84 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, CheckCircle, XCircle, Package } from 'lucide-react';
-import { mockOrders, mockRestaurants } from '@/lib/mockData';
+import { Clock, CheckCircle, XCircle, Package, Loader2 } from 'lucide-react';
+import { orderAPI } from '@/lib/api';
+import { toast } from 'sonner';
 
 const Orders = () => {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      console.log('Fetching orders from API...');
+      const data = await orderAPI.getByUser();
+      console.log('Orders received from API:', data);
+      console.log('Type of data:', typeof data);
+      console.log('Is array?', Array.isArray(data));
+      console.log('Data keys:', data ? Object.keys(data) : 'null');
+      
+      // Handle different response formats
+      let ordersArray = [];
+      if (Array.isArray(data)) {
+        ordersArray = data;
+      } else if (data && typeof data === 'object') {
+        // Check if it's an empty object
+        const keys = Object.keys(data);
+        if (keys.length === 0) {
+          console.log('Received empty object, setting orders to empty array');
+          ordersArray = [];
+        } else if (Array.isArray((data as any).data)) {
+          ordersArray = (data as any).data;
+        } else if (Array.isArray((data as any).orders)) {
+          ordersArray = (data as any).orders;
+        } else if (keys.length > 0) {
+          // If it's a single order object with properties, wrap it in an array
+          ordersArray = [data];
+        }
+      }
+      
+      console.log('Final orders array:', ordersArray);
+      console.log('Number of orders:', ordersArray.length);
+      setOrders(ordersArray);
+    } catch (error: any) {
+      console.error('Error fetching orders:', error);
+      toast.error('Failed to load orders');
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    if (!confirm('Are you sure you want to cancel this order?')) {
+      return;
+    }
+
+    try {
+      setCancellingOrderId(orderId);
+      await orderAPI.cancel(orderId);
+      toast.success('Order cancelled successfully');
+      // Refresh orders
+      await fetchOrders();
+    } catch (error: any) {
+      console.error('Error cancelling order:', error);
+      toast.error(error.message || 'Failed to cancel order');
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'delivered':
@@ -20,32 +91,34 @@ const Orders = () => {
   };
 
   const getStatusBadge = (status: string) => {
+    const statusLower = status.toLowerCase();
     const variants: { [key: string]: any } = {
       pending: 'outline',
       confirmed: 'secondary',
       preparing: 'secondary',
-      'out-for-delivery': 'default',
+      out_for_delivery: 'default',
       delivered: 'secondary',
       cancelled: 'destructive',
     };
 
     return (
-      <Badge variant={variants[status] || 'outline'} className="capitalize">
-        {status.replace('-', ' ')}
+      <Badge variant={variants[statusLower] || 'outline'} className="capitalize">
+        {status.replace(/_/g, ' ')}
       </Badge>
     );
   };
 
-  const activeOrders = mockOrders.filter((order) =>
-    ['pending', 'confirmed', 'preparing', 'out-for-delivery'].includes(order.status)
+  const activeOrders = orders.filter((order) =>
+    ['PENDING', 'CONFIRMED', 'PREPARING', 'OUT_FOR_DELIVERY'].includes(order.status)
   );
 
-  const pastOrders = mockOrders.filter((order) =>
-    ['delivered', 'cancelled'].includes(order.status)
+  const pastOrders = orders.filter((order) =>
+    ['DELIVERED', 'CANCELLED'].includes(order.status)
   );
 
-  const renderOrderCard = (order: typeof mockOrders[0]) => {
-    const restaurant = mockRestaurants.find((r) => r.id === order.restaurantId);
+  const renderOrderCard = (order: any) => {
+    const canCancel = ['PENDING', 'CONFIRMED', 'PREPARING'].includes(order.status);
+    const isCancelling = cancellingOrderId === order.id.toString();
     
     return (
       <Card key={order.id} className="hover:shadow-food-card transition-shadow">
@@ -54,14 +127,19 @@ const Orders = () => {
             <div className="flex items-start gap-4">
               <div className="mt-1">{getStatusIcon(order.status)}</div>
               <div>
-                <h3 className="font-semibold text-lg mb-1">{restaurant?.name}</h3>
+                <h3 className="font-semibold text-lg mb-1">
+                  {order.restaurant?.name || 'Restaurant'}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Order #{order.orderNumber}
+                </p>
                 <p className="text-sm text-muted-foreground mb-2">
                   {new Date(order.orderDate).toLocaleString()}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {order.items.map((item, idx) => (
+                  {order.items?.map((item: any, idx: number) => (
                     <span key={idx} className="text-sm text-muted-foreground">
-                      {item.quantity}x {item.menuItem.name}
+                      {item.quantity}x {item.menuItem?.name || 'Item'}
                       {idx < order.items.length - 1 && ','}
                     </span>
                   ))}
@@ -80,7 +158,24 @@ const Orders = () => {
                 Track Order
               </Button>
             </Link>
-            {order.status === 'delivered' && (
+            {canCancel && (
+              <Button 
+                variant="destructive" 
+                className="flex-1"
+                onClick={() => handleCancelOrder(order.id.toString())}
+                disabled={isCancelling}
+              >
+                {isCancelling ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Cancelling...
+                  </>
+                ) : (
+                  'Cancel Order'
+                )}
+              </Button>
+            )}
+            {order.status === 'DELIVERED' && (
               <Button className="flex-1">Reorder</Button>
             )}
           </div>
@@ -88,6 +183,20 @@ const Orders = () => {
       </Card>
     );
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container py-8 flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
+            <p className="text-muted-foreground">Loading your orders...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

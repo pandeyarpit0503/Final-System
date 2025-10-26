@@ -24,7 +24,14 @@ public class OrderController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Order>> getUserOrders(@PathVariable Long userId) {
+    public ResponseEntity<List<Order>> getUserOrdersById(@PathVariable Long userId) {
+        return ResponseEntity.ok(orderService.getUserOrders(userId));
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<List<Order>> getUserOrders() {
+        // In real app, get userId from JWT token
+        Long userId = 1L; // Mock userId
         return ResponseEntity.ok(orderService.getUserOrders(userId));
     }
 
@@ -54,8 +61,14 @@ public class OrderController {
         return ResponseEntity.ok(orderService.updateOrderStatus(id, Order.OrderStatus.valueOf(status.toUpperCase())));
     }
 
-    @DeleteMapping("/{id}")
+    @PutMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelOrder(@PathVariable Long id) {
+        orderService.cancelOrder(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
         orderService.cancelOrder(id);
         return ResponseEntity.ok().build();
     }

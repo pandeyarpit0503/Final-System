@@ -1,17 +1,52 @@
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, Clock, Package, Truck, MapPin } from 'lucide-react';
-import { mockOrders, mockRestaurants } from '@/lib/mockData';
+import { CheckCircle, Clock, Package, Truck, MapPin, Loader2 } from 'lucide-react';
+import { orderAPI } from '@/lib/api';
+import { toast } from 'sonner';
 
 const TrackOrder = () => {
   const { orderId } = useParams();
-  const order = mockOrders.find((o) => o.id === orderId);
-  const restaurant = order ? mockRestaurants.find((r) => r.id === order.restaurantId) : null;
+  const [order, setOrder] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!order || !restaurant) {
+  useEffect(() => {
+    if (orderId) {
+      fetchOrder();
+    }
+  }, [orderId]);
+
+  const fetchOrder = async () => {
+    try {
+      setLoading(true);
+      const data = await orderAPI.getById(orderId!);
+      setOrder(data);
+    } catch (error: any) {
+      console.error('Error fetching order:', error);
+      toast.error('Failed to load order details');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container py-12 flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
+            <p className="text-muted-foreground">Loading order details...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!order) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -26,14 +61,15 @@ const TrackOrder = () => {
   }
 
   const orderSteps = [
-    { status: 'pending', label: 'Order Placed', icon: CheckCircle, time: order.orderDate },
-    { status: 'confirmed', label: 'Order Confirmed', icon: CheckCircle, time: order.orderDate },
-    { status: 'preparing', label: 'Preparing Food', icon: Package, time: null },
-    { status: 'out-for-delivery', label: 'Out for Delivery', icon: Truck, time: null },
-    { status: 'delivered', label: 'Delivered', icon: MapPin, time: order.estimatedDelivery },
+    { status: 'PENDING', label: 'Order Placed', icon: CheckCircle, time: order.orderDate },
+    { status: 'CONFIRMED', label: 'Order Confirmed', icon: CheckCircle, time: order.orderDate },
+    { status: 'PREPARING', label: 'Preparing Food', icon: Package, time: null },
+    { status: 'OUT_FOR_DELIVERY', label: 'Out for Delivery', icon: Truck, time: null },
+    { status: 'DELIVERED', label: 'Delivered', icon: MapPin, time: order.estimatedDelivery },
   ];
 
   const currentStepIndex = orderSteps.findIndex((step) => step.status === order.status);
+  const restaurant = order.restaurant || {};
 
   return (
     <div className="min-h-screen bg-background">
@@ -45,7 +81,7 @@ const TrackOrder = () => {
             <Button variant="ghost" className="mb-4">← Back to Orders</Button>
           </Link>
           <h1 className="text-3xl font-bold">Track Order</h1>
-          <p className="text-muted-foreground">Order ID: {order.id}</p>
+          <p className="text-muted-foreground">Order #{order.orderNumber}</p>
         </div>
 
         <div className="grid gap-6">
@@ -113,21 +149,21 @@ const TrackOrder = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h3 className="font-semibold mb-2">{restaurant.name}</h3>
-                <p className="text-sm text-muted-foreground">{restaurant.address}</p>
+                <h3 className="font-semibold mb-2">{restaurant.name || 'Restaurant'}</h3>
+                <p className="text-sm text-muted-foreground">{restaurant.address || 'Address not available'}</p>
               </div>
               
               <Separator />
               
               <div className="space-y-2">
                 <h4 className="font-semibold">Items</h4>
-                {order.items.map((item, idx) => (
+                {order.items?.map((item: any, idx: number) => (
                   <div key={idx} className="flex justify-between text-sm">
                     <span>
-                      {item.quantity}x {item.menuItem.name}
+                      {item.quantity}x {item.menuItem?.name || 'Item'}
                     </span>
                     <span className="font-medium">
-                      ${(item.quantity * item.menuItem.price).toFixed(2)}
+                      ${(item.quantity * item.price).toFixed(2)}
                     </span>
                   </div>
                 ))}
@@ -138,15 +174,15 @@ const TrackOrder = () => {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>${(order.total - 3.99 - order.total * 0.08).toFixed(2)}</span>
+                  <span>${(order.total - 3.99 - order.total * 0.1).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Delivery Fee</span>
                   <span>$3.99</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tax</span>
-                  <span>${(order.total * 0.08).toFixed(2)}</span>
+                  <span className="text-muted-foreground">Tax (10%)</span>
+                  <span>${(order.total * 0.1).toFixed(2)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold">
@@ -165,7 +201,7 @@ const TrackOrder = () => {
           </Card>
 
           {/* Estimated Delivery */}
-          {order.estimatedDelivery && order.status !== 'delivered' && (
+          {order.estimatedDelivery && order.status !== 'DELIVERED' && (
             <Card className="bg-primary text-primary-foreground">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">

@@ -6,11 +6,24 @@ interface ApiResponse<T> {
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error || 'An error occurred');
+  const text = await response.text();
+  console.log('Raw response text:', text);
+  console.log('Response status:', response.status);
+  console.log('Response headers:', response.headers);
+  
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch (e) {
+    console.error('Failed to parse JSON:', e);
+    data = {};
   }
-  return response.json();
+  
+  if (!response.ok) {
+    const error = data.message || response.statusText || 'An error occurred';
+    throw new Error(error);
+  }
+  return data;
 }
 
 // Helper function to get auth headers
@@ -92,13 +105,15 @@ export const orderAPI = {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
+      credentials: 'include'
     });
     return handleResponse(response);
   },
 
-  async getByUser(userId: string) {
-    const response = await fetch(`${API_BASE_URL}/orders/user/${userId}`, {
+  async getByUser() {
+    const response = await fetch(`${API_BASE_URL}/orders/user`, {
       headers: getAuthHeaders(),
+      credentials: 'include'
     });
     return handleResponse(response);
   },
@@ -106,6 +121,7 @@ export const orderAPI = {
   async getById(id: string) {
     const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
       headers: getAuthHeaders(),
+      credentials: 'include'
     });
     return handleResponse(response);
   },
@@ -113,6 +129,7 @@ export const orderAPI = {
   async getByOrderNumber(orderNumber: string) {
     const response = await fetch(`${API_BASE_URL}/orders/order-number/${orderNumber}`, {
       headers: getAuthHeaders(),
+      credentials: 'include'
     });
     return handleResponse(response);
   },
@@ -121,14 +138,16 @@ export const orderAPI = {
     const response = await fetch(`${API_BASE_URL}/orders/${orderId}/status/${status}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
+      credentials: 'include'
     });
     return handleResponse(response);
   },
 
   async cancel(id: string) {
-    const response = await fetch(`${API_BASE_URL}/orders/${id}`, {
-      method: 'DELETE',
+    const response = await fetch(`${API_BASE_URL}/orders/${id}/cancel`, {
+      method: 'PUT',
       headers: getAuthHeaders(),
+      credentials: 'include'
     });
     return handleResponse(response);
   },

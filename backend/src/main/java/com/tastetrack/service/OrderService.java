@@ -104,7 +104,7 @@ public class OrderService {
     }
 
     public Optional<Order> getOrderById(Long id) {
-        return orderRepository.findById(id);
+        return orderRepository.findByIdWithDetails(id);
     }
 
     public Optional<Order> getOrderByOrderNumber(String orderNumber) {
