@@ -192,7 +192,7 @@ const RestaurantDetail = () => {
                     <Card key={item.id} className="overflow-hidden">
                       <div className="aspect-video overflow-hidden">
                         <img
-                          src={getImage(item.category)}
+                          src={item.image || getImage(item.category)}
                           alt={item.name}
                           className="h-full w-full object-cover"
                         />

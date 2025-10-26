@@ -16,6 +16,7 @@ com\tastetrack\entity\Delivery$DeliveryStatus.class
 com\tastetrack\controller\AuthController.class
 com\tastetrack\entity\OrderItem.class
 com\tastetrack\dto\PaymentRequest.class
+com\tastetrack\controller\AdminSetupController.class
 com\tastetrack\config\GlobalExceptionHandler.class
 com\tastetrack\controller\RestaurantController.class
 com\tastetrack\service\RestaurantService.class

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { CartProvider } from "@/contexts/CartContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Restaurants from "./pages/Restaurants";
 import RestaurantDetail from "./pages/RestaurantDetail";
@@ -13,6 +14,7 @@ import Orders from "./pages/Orders";
 import TrackOrder from "./pages/TrackOrder";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminRestaurants from "./pages/admin/Restaurants";
 import AdminOrders from "./pages/admin/Orders";
@@ -40,10 +42,30 @@ const App = () => (
             <Route path="/track/:orderId" element={<TrackOrder />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/restaurants" element={<AdminRestaurants />} />
-            <Route path="/admin/orders" element={<AdminOrders />} />
-            <Route path="/admin/menu" element={<AdminMenu />} />
+
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/restaurants" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminRestaurants />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/orders" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminOrders />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/menu" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminMenu />
+              </ProtectedRoute>
+            } />
+
             <Route path="/backend-test" element={<BackendTest />} />
             <Route path="/auth-test" element={<AuthTest />} />
             <Route path="*" element={<NotFound />} />

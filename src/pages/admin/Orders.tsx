@@ -1,41 +1,66 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search } from 'lucide-react';
-import { mockOrders, mockRestaurants } from '@/lib/mockData';
+import { Search, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { orderAPI } from '@/lib/api';
 
 const AdminOrders = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [orders, setOrders] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredOrders = mockOrders.filter((order) => {
-    const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const loadOrders = async () => {
+    setIsLoading(true);
+    try {
+      const data = await orderAPI.getAll();
+      setOrders(data);
+    } catch (error: any) {
+      toast.error('Failed to load orders');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const filteredOrders = orders.filter((order) => {
+    const matchesSearch = order.orderNumber?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const handleUpdateStatus = (orderId: string, newStatus: string) => {
-    toast.success(`Order ${orderId} status updated to ${newStatus}`);
+  const handleUpdateStatus = async (orderId: string, orderNumber: string, newStatus: string) => {
+    try {
+      await orderAPI.updateStatus(orderId, newStatus);
+      toast.success(`Order ${orderNumber} status updated to ${newStatus}`);
+      loadOrders();
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update order status');
+    }
   };
 
   const getStatusBadge = (status: string) => {
+    const statusLower = status?.toLowerCase() || '';
     const variants: { [key: string]: any } = {
       pending: 'outline',
       confirmed: 'secondary',
       preparing: 'secondary',
-      'out-for-delivery': 'default',
+      out_for_delivery: 'default',
       delivered: 'secondary',
       cancelled: 'destructive',
     };
 
     return (
-      <Badge variant={variants[status] || 'outline'} className="capitalize">
-        {status.replace('-', ' ')}
+      <Badge variant={variants[statusLower] || 'outline'} className="capitalize">
+        {status?.replace(/_/g, ' ')}
       </Badge>
     );
   };
@@ -67,94 +92,100 @@ const AdminOrders = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Orders</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="preparing">Preparing</SelectItem>
-              <SelectItem value="out-for-delivery">Out for Delivery</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
+              <SelectItem value="PENDING">Pending</SelectItem>
+              <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+              <SelectItem value="PREPARING">Preparing</SelectItem>
+              <SelectItem value="OUT_FOR_DELIVERY">Out for Delivery</SelectItem>
+              <SelectItem value="DELIVERED">Delivered</SelectItem>
+              <SelectItem value="CANCELLED">Cancelled</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* Orders List */}
-        <div className="space-y-4">
-          {filteredOrders.map((order) => {
-            const restaurant = mockRestaurants.find((r) => r.id === order.restaurantId);
-            
-            return (
-              <Card key={order.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-lg">{order.id}</h3>
-                        {getStatusBadge(order.status)}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredOrders.map((order) => {
+              return (
+                <Card key={order.id}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-semibold text-lg">{order.orderNumber}</h3>
+                          {getStatusBadge(order.status)}
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          {order.restaurant?.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(order.orderDate).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Customer: {order.user?.firstName} {order.user?.lastName}
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-1">
-                        {restaurant?.name}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(order.orderDate).toLocaleString()}
-                      </p>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold text-primary">${order.total?.toFixed(2)}</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-primary">${order.total.toFixed(2)}</p>
+
+                    <div className="space-y-2 mb-4">
+                      <p className="font-medium text-sm">Items:</p>
+                      {order.items?.map((item: any, idx: number) => (
+                        <p key={idx} className="text-sm text-muted-foreground">
+                          {item.quantity}x {item.menuItem?.name} - ${item.price?.toFixed(2)}
+                        </p>
+                      ))}
                     </div>
-                  </div>
 
-                  <div className="space-y-2 mb-4">
-                    <p className="font-medium text-sm">Items:</p>
-                    {order.items.map((item, idx) => (
-                      <p key={idx} className="text-sm text-muted-foreground">
-                        {item.quantity}x {item.menuItem.name}
-                      </p>
-                    ))}
-                  </div>
+                    <div className="mb-4">
+                      <p className="font-medium text-sm mb-1">Delivery Address:</p>
+                      <p className="text-sm text-muted-foreground">{order.deliveryAddress}</p>
+                    </div>
 
-                  <div className="mb-4">
-                    <p className="font-medium text-sm mb-1">Delivery Address:</p>
-                    <p className="text-sm text-muted-foreground">{order.deliveryAddress}</p>
-                  </div>
+                    <div className="flex gap-2 flex-wrap">
+                      {order.status === 'PENDING' && (
+                        <Button size="sm" onClick={() => handleUpdateStatus(order.id, order.orderNumber, 'CONFIRMED')}>
+                          Confirm Order
+                        </Button>
+                      )}
+                      {order.status === 'CONFIRMED' && (
+                        <Button size="sm" onClick={() => handleUpdateStatus(order.id, order.orderNumber, 'PREPARING')}>
+                          Start Preparing
+                        </Button>
+                      )}
+                      {order.status === 'PREPARING' && (
+                        <Button size="sm" onClick={() => handleUpdateStatus(order.id, order.orderNumber, 'OUT_FOR_DELIVERY')}>
+                          Out for Delivery
+                        </Button>
+                      )}
+                      {order.status === 'OUT_FOR_DELIVERY' && (
+                        <Button size="sm" onClick={() => handleUpdateStatus(order.id, order.orderNumber, 'DELIVERED')}>
+                          Mark Delivered
+                        </Button>
+                      )}
+                      {['PENDING', 'CONFIRMED'].includes(order.status) && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleUpdateStatus(order.id, order.orderNumber, 'CANCELLED')}
+                        >
+                          Cancel Order
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
 
-                  <div className="flex gap-2">
-                    {order.status === 'pending' && (
-                      <Button size="sm" onClick={() => handleUpdateStatus(order.id, 'confirmed')}>
-                        Confirm Order
-                      </Button>
-                    )}
-                    {order.status === 'confirmed' && (
-                      <Button size="sm" onClick={() => handleUpdateStatus(order.id, 'preparing')}>
-                        Start Preparing
-                      </Button>
-                    )}
-                    {order.status === 'preparing' && (
-                      <Button size="sm" onClick={() => handleUpdateStatus(order.id, 'out-for-delivery')}>
-                        Out for Delivery
-                      </Button>
-                    )}
-                    {order.status === 'out-for-delivery' && (
-                      <Button size="sm" onClick={() => handleUpdateStatus(order.id, 'delivered')}>
-                        Mark Delivered
-                      </Button>
-                    )}
-                    {['pending', 'confirmed'].includes(order.status) && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleUpdateStatus(order.id, 'cancelled')}
-                      >
-                        Cancel Order
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {filteredOrders.length === 0 && (
+        {!isLoading && filteredOrders.length === 0 && (
           <div className="text-center py-12">
             <p className="text-muted-foreground">No orders found</p>
           </div>

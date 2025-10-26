@@ -113,31 +113,46 @@ const Navbar = ({ cartItemsCount }: NavbarProps) => {
             </div>
           </>
         ) : (
-          <div className="flex items-center gap-4">
-            <Link to="/admin" className={location.pathname === '/admin' ? 'text-primary' : ''}>
-              <Button variant="ghost" size="sm">
-                <Home className="h-4 w-4 mr-2" />
-                Dashboard
-              </Button>
-            </Link>
-            <Link to="/admin/restaurants" className={location.pathname === '/admin/restaurants' ? 'text-primary' : ''}>
-              <Button variant="ghost" size="sm">
-                <UtensilsCrossed className="h-4 w-4 mr-2" />
-                Restaurants
-              </Button>
-            </Link>
-            <Link to="/admin/orders" className={location.pathname === '/admin/orders' ? 'text-primary' : ''}>
-              <Button variant="ghost" size="sm">
-                <Package className="h-4 w-4 mr-2" />
-                Orders
-              </Button>
-            </Link>
-            <Link to="/admin/menu" className={location.pathname === '/admin/menu' ? 'text-primary' : ''}>
-              <Button variant="ghost" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                Menu
-              </Button>
-            </Link>
+          <div className="flex items-center gap-4 flex-1 justify-between">
+            <div className="flex items-center gap-2">
+              <Link to="/admin" className={location.pathname === '/admin' ? 'text-primary' : ''}>
+                <Button variant="ghost" size="sm">
+                  <Home className="h-4 w-4 mr-2" />
+                  Dashboard
+                </Button>
+              </Link>
+              <Link to="/admin/restaurants" className={location.pathname === '/admin/restaurants' ? 'text-primary' : ''}>
+                <Button variant="ghost" size="sm">
+                  <UtensilsCrossed className="h-4 w-4 mr-2" />
+                  Restaurants
+                </Button>
+              </Link>
+              <Link to="/admin/orders" className={location.pathname === '/admin/orders' ? 'text-primary' : ''}>
+                <Button variant="ghost" size="sm">
+                  <Package className="h-4 w-4 mr-2" />
+                  Orders
+                </Button>
+              </Link>
+              <Link to="/admin/menu" className={location.pathname === '/admin/menu' ? 'text-primary' : ''}>
+                <Button variant="ghost" size="sm">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Menu
+                </Button>
+              </Link>
+            </div>
+            <div className="flex items-center gap-2">
+              {isLoggedIn && user && (
+                <>
+                  <span className="text-sm text-muted-foreground">
+                    Admin: {user?.firstName}
+                  </span>
+                  <Button variant="outline" size="sm" onClick={handleLogout}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         )}
       </div>

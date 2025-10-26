@@ -10,17 +10,22 @@ async function handleResponse<T>(response: Response): Promise<T> {
   console.log('Raw response text:', text);
   console.log('Response status:', response.status);
   console.log('Response headers:', response.headers);
-  
+
   let data;
   try {
     data = text ? JSON.parse(text) : {};
   } catch (e) {
     console.error('Failed to parse JSON:', e);
+    // If JSON parsing fails, treat the text as the error message or data
+    if (!response.ok) {
+      // For error responses, use the plain text as the error message
+      throw new Error(text || response.statusText || 'An error occurred');
+    }
     data = {};
   }
-  
+
   if (!response.ok) {
-    const error = data.message || response.statusText || 'An error occurred';
+    const error = data.message || data.error || response.statusText || 'An error occurred';
     throw new Error(error);
   }
   return data;
@@ -83,6 +88,32 @@ export const restaurantAPI = {
     const response = await fetch(`${API_BASE_URL}/restaurants/open`);
     return handleResponse(response);
   },
+
+  async create(data: any) {
+    const response = await fetch(`${API_BASE_URL}/restaurants`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
+  async update(id: string, data: any) {
+    const response = await fetch(`${API_BASE_URL}/restaurants/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
+  async delete(id: string) {
+    const response = await fetch(`${API_BASE_URL}/restaurants/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
 };
 
 // Menu Item API
@@ -94,6 +125,32 @@ export const menuItemAPI = {
 
   async getById(id: string) {
     const response = await fetch(`${API_BASE_URL}/menu-items/${id}`);
+    return handleResponse(response);
+  },
+
+  async create(data: any) {
+    const response = await fetch(`${API_BASE_URL}/menu-items`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
+  async update(id: string, data: any) {
+    const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return handleResponse(response);
+  },
+
+  async delete(id: string) {
+    const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
     return handleResponse(response);
   },
 };
@@ -108,6 +165,29 @@ export const orderAPI = {
       credentials: 'include'
     });
     return handleResponse(response);
+  },
+
+  async getAll() {
+    const response = await fetch(`${API_BASE_URL}/orders/status/PENDING`, {
+      headers: getAuthHeaders(),
+      credentials: 'include'
+    });
+    const pending = await handleResponse(response);
+
+    // Get all statuses
+    const statuses = ['CONFIRMED', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
+    const allOrders = [...pending];
+
+    for (const status of statuses) {
+      const res = await fetch(`${API_BASE_URL}/orders/status/${status}`, {
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      });
+      const orders = await handleResponse(res);
+      allOrders.push(...orders);
+    }
+
+    return allOrders;
   },
 
   async getByUser() {

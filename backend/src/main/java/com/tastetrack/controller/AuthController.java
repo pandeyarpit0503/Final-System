@@ -6,7 +6,11 @@ import com.tastetrack.dto.SignupRequest;
 import com.tastetrack.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -14,6 +18,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> signup(@RequestBody SignupRequest request) {
@@ -33,5 +40,15 @@ public class AuthController {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    @GetMapping("/test-password")
+    public ResponseEntity<Map<String, String>> testPassword(@RequestParam String password) {
+        Map<String, String> result = new HashMap<>();
+        String encoded = passwordEncoder.encode(password);
+        result.put("plainPassword", password);
+        result.put("encodedPassword", encoded);
+        result.put("matches", String.valueOf(passwordEncoder.matches(password, encoded)));
+        return ResponseEntity.ok(result);
     }
 }

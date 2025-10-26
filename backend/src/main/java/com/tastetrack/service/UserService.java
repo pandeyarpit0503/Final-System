@@ -44,10 +44,22 @@ public class UserService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        System.out.println("=== LOGIN DEBUG ===");
+        System.out.println("Email: " + request.getEmail());
+        System.out.println("Password (plain): " + request.getPassword());
+
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        System.out.println("User found: " + user.getEmail());
+        System.out.println("User role: " + user.getRole());
+        System.out.println("User enabled: " + user.isEnabled());
+        System.out.println("Password hash from DB: " + user.getPassword());
+
+        boolean passwordMatches = passwordEncoder.matches(request.getPassword(), user.getPassword());
+        System.out.println("Password matches: " + passwordMatches);
+
+        if (!passwordMatches) {
             throw new RuntimeException("Invalid email or password");
         }
 
