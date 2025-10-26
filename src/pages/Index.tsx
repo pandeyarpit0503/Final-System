@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,6 +14,31 @@ import saladImage from '@/assets/salad.jpg';
 
 const Index = () => {
   const { addToCart } = useCart();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Check if user is logged in
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('user');
+
+      setIsLoggedIn(!!(token && userData));
+    };
+
+    // Check on mount
+    checkLoginStatus();
+
+    // Listen for storage changes (e.g., login/logout in another tab)
+    window.addEventListener('storage', checkLoginStatus);
+
+    // Listen for focus events (when user returns to the tab)
+    window.addEventListener('focus', checkLoginStatus);
+
+    return () => {
+      window.removeEventListener('storage', checkLoginStatus);
+      window.removeEventListener('focus', checkLoginStatus);
+    };
+  }, []);
   
   const featuredDishes = [
     { 
@@ -104,11 +130,13 @@ const Index = () => {
                 Order Now
               </Button>
             </Link>
-            <Link to="/auth">
-              <Button size="lg" variant="outline" className="text-lg px-8 h-14">
-                Sign Up
-              </Button>
-            </Link>
+            {!isLoggedIn && (
+              <Link to="/auth">
+                <Button size="lg" variant="outline" className="text-lg px-8 h-14">
+                  Sign Up
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>
