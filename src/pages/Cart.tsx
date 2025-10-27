@@ -1,19 +1,54 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Trash2, Plus, Minus, ShoppingBag, Tag, X } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { toast } from 'sonner';
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { cartItems, updateQuantity, removeFromCart, getTotalPrice } = useCart();
+  const {
+    cartItems,
+    updateQuantity,
+    removeFromCart,
+    getTotalPrice,
+    appliedCoupon,
+    applyCoupon,
+    removeCoupon,
+    getDiscountAmount
+  } = useCart();
+
+  const [couponCode, setCouponCode] = useState('');
 
   const subtotal = getTotalPrice();
   const deliveryFee = 3.99;
   const tax = subtotal * 0.08;
-  const total = subtotal + deliveryFee + tax;
+  const discount = getDiscountAmount();
+  const total = subtotal + deliveryFee + tax - discount;
+
+  const handleApplyCoupon = () => {
+    if (!couponCode.trim()) {
+      toast.error('Please enter a coupon code');
+      return;
+    }
+
+    const success = applyCoupon(couponCode);
+    if (success) {
+      toast.success('Coupon applied successfully! 🎉');
+      setCouponCode('');
+    } else {
+      toast.error('Invalid coupon code or minimum order not met');
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    removeCoupon();
+    toast.info('Coupon removed');
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -95,7 +130,67 @@ const Cart = () => {
             <Card className="sticky top-20">
               <CardContent className="p-6">
                 <h2 className="text-xl font-bold mb-4">Order Summary</h2>
-                
+
+                {/* Coupon Section */}
+                <div className="mb-4 p-4 bg-muted/50 rounded-lg border-2 border-dashed border-primary/30 card-hover">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Tag className="h-4 w-4 text-primary" />
+                    <span className="font-semibold text-sm">Have a coupon?</span>
+                  </div>
+
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between p-3 bg-secondary/20 rounded-lg border border-secondary animate-bounce-in">
+                      <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4 text-secondary" />
+                        <div>
+                          <p className="font-bold text-sm">{appliedCoupon.code}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {appliedCoupon.type === 'percentage'
+                              ? `${appliedCoupon.discount}% off`
+                              : `$${appliedCoupon.discount} off`}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleRemoveCoupon}
+                        className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter code"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                        className="text-sm"
+                      />
+                      <Button
+                        onClick={handleApplyCoupon}
+                        size="sm"
+                        className="button-glow-pulse"
+                      >
+                        Apply
+                      </Button>
+                    </div>
+                  )}
+
+                  <div className="mt-3 text-xs text-muted-foreground">
+                    <p className="font-medium mb-1">Available codes:</p>
+                    <div className="flex flex-wrap gap-1">
+                      <code className="px-2 py-0.5 bg-background rounded text-primary">SAVE10</code>
+                      <code className="px-2 py-0.5 bg-background rounded text-primary">SAVE20</code>
+                      <code className="px-2 py-0.5 bg-background rounded text-primary">FLAT5</code>
+                    </div>
+                  </div>
+                </div>
+
+                <Separator className="mb-4" />
+
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
@@ -106,12 +201,19 @@ const Cart = () => {
                     <span className="font-medium">${deliveryFee.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Tax</span>
+                    <span className="text-muted-foreground">Tax (8%)</span>
                     <span className="font-medium">${tax.toFixed(2)}</span>
                   </div>
-                  
+
+                  {discount > 0 && (
+                    <div className="flex justify-between text-sm animate-bounce-in">
+                      <span className="text-secondary font-medium">Discount</span>
+                      <span className="font-bold text-secondary">-${discount.toFixed(2)}</span>
+                    </div>
+                  )}
+
                   <Separator />
-                  
+
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
                     <span className="text-primary">${total.toFixed(2)}</span>

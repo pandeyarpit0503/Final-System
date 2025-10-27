@@ -7,21 +7,50 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
-import { CreditCard, Wallet, MapPin } from 'lucide-react';
+import { CreditCard, Wallet, MapPin, Tag, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCart } from '@/contexts/CartContext';
 import { orderAPI } from '@/lib/api';
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { cartItems, clearCart, getTotalPrice } = useCart();
+  const {
+    cartItems,
+    clearCart,
+    getTotalPrice,
+    appliedCoupon,
+    applyCoupon,
+    removeCoupon,
+    getDiscountAmount
+  } = useCart();
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+
+  const handleApplyCoupon = () => {
+    if (!couponCode.trim()) {
+      toast.error('Please enter a coupon code');
+      return;
+    }
+
+    const success = applyCoupon(couponCode);
+    if (success) {
+      toast.success('Coupon applied successfully! 🎉');
+      setCouponCode('');
+    } else {
+      toast.error('Invalid coupon code or minimum order not met');
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    removeCoupon();
+    toast.info('Coupon removed');
+  };
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
       const form = e.target as HTMLFormElement;
       const formData = new FormData(form);
@@ -94,7 +123,11 @@ const Checkout = () => {
     }
   };
 
-  const orderTotal = getTotalPrice() + 3.99 + (getTotalPrice() * 0.1); // Subtotal + delivery + 10% tax
+  const subtotal = getTotalPrice();
+  const deliveryFee = 3.99;
+  const tax = subtotal * 0.08;
+  const discount = getDiscountAmount();
+  const orderTotal = subtotal + deliveryFee + tax - discount;
 
   return (
     <div className="min-h-screen bg-background">
@@ -220,22 +253,80 @@ const Checkout = () => {
                   <CardTitle>Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  {/* Coupon Section */}
+                  <div className="p-4 bg-muted/50 rounded-lg border-2 border-dashed border-primary/30 card-hover">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Tag className="h-4 w-4 text-primary" />
+                      <span className="font-semibold text-sm">Apply Coupon</span>
+                    </div>
+
+                    {appliedCoupon ? (
+                      <div className="flex items-center justify-between p-3 bg-secondary/20 rounded-lg border border-secondary animate-bounce-in">
+                        <div className="flex items-center gap-2">
+                          <Tag className="h-4 w-4 text-secondary" />
+                          <div>
+                            <p className="font-bold text-sm">{appliedCoupon.code}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {appliedCoupon.type === 'percentage'
+                                ? `${appliedCoupon.discount}% off`
+                                : `$${appliedCoupon.discount} off`}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleRemoveCoupon}
+                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter code"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                          className="text-sm"
+                        />
+                        <Button
+                          onClick={handleApplyCoupon}
+                          size="sm"
+                          className="button-glow-pulse"
+                        >
+                          Apply
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  <Separator />
+
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span className="font-medium">${getTotalPrice().toFixed(2)}</span>
+                      <span className="font-medium">${subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Delivery Fee</span>
-                      <span className="font-medium">$3.99</span>
+                      <span className="font-medium">${deliveryFee.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Tax (10%)</span>
-                      <span className="font-medium">${(getTotalPrice() * 0.1).toFixed(2)}</span>
+                      <span className="text-muted-foreground">Tax (8%)</span>
+                      <span className="font-medium">${tax.toFixed(2)}</span>
                     </div>
-                    
+
+                    {discount > 0 && (
+                      <div className="flex justify-between text-sm animate-bounce-in">
+                        <span className="text-secondary font-medium">Discount</span>
+                        <span className="font-bold text-secondary">-${discount.toFixed(2)}</span>
+                      </div>
+                    )}
+
                     <Separator />
-                    
+
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
                       <span className="text-primary">${orderTotal.toFixed(2)}</span>
