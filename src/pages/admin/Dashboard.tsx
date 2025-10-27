@@ -54,15 +54,19 @@ const AdminDashboard = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat) => (
-            <Card key={stat.title}>
+          {stats.map((stat, index) => (
+            <Card
+              key={stat.title}
+              className="card-hover group stagger-item"
+              style={{ transform: 'translateY(20px)' }}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <stat.icon className={`h-8 w-8 ${stat.color}`} />
-                  <span className="text-sm font-medium text-secondary">{stat.change}</span>
+                  <stat.icon className={`h-8 w-8 ${stat.color} group-hover:scale-110 transition-transform duration-300`} />
+                  <span className="text-sm font-medium text-secondary animate-pulse">{stat.change}</span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-1">{stat.title}</p>
-                <p className="text-3xl font-bold">{stat.value}</p>
+                <p className="text-3xl font-bold group-hover:text-primary transition-colors">{stat.value}</p>
               </CardContent>
             </Card>
           ))}

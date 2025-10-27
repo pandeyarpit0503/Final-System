@@ -105,23 +105,24 @@ const Restaurants = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredRestaurants.map((restaurant) => (
                 <Link key={restaurant.id} to={`/restaurant/${restaurant.id}`}>
-                  <Card className="overflow-hidden hover:shadow-food-card transition-all duration-300 hover:-translate-y-1 h-full">
-                    <div className="aspect-video bg-muted relative overflow-hidden">
+                  <Card className="overflow-hidden card-hover card-shimmer shadow-food-card h-full group animate-scale-in">
+                    <div className="aspect-video bg-muted relative image-zoom-hover">
                       <img
                         src={restaurant.image}
                         alt={restaurant.name}
                         className="h-full w-full object-cover"
                       />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       {restaurant.isOpen && (
-                        <Badge className="absolute top-3 right-3 bg-secondary">Open</Badge>
+                        <Badge className="absolute top-3 right-3 bg-secondary animate-pulse">Open</Badge>
                       )}
                     </div>
                     <CardContent className="p-4">
-                      <h3 className="font-semibold text-xl mb-2">{restaurant.name}</h3>
+                      <h3 className="font-semibold text-xl mb-2 group-hover:text-primary transition-colors">{restaurant.name}</h3>
                       <p className="text-sm text-muted-foreground mb-3">{restaurant.cuisine}</p>
 
                       <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 group-hover:scale-110 transition-transform">
                           <Star className="h-4 w-4 fill-accent text-accent" />
                           <span className="font-medium">{restaurant.rating}</span>
                         </div>

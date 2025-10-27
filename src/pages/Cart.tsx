@@ -44,10 +44,10 @@ const Cart = () => {
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {cartItems.map(({ item, quantity }) => (
-              <Card key={item.id}>
+              <Card key={item.id} className="card-hover card-shimmer group animate-slide-in-left">
                 <CardContent className="p-4">
                   <div className="flex gap-4">
-                    <div className="w-24 h-24 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                    <div className="w-24 h-24 rounded-lg bg-muted overflow-hidden flex-shrink-0 image-zoom-hover">
                       <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                     

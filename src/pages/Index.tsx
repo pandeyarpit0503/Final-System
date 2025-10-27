@@ -150,21 +150,32 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredDishes.map((dish) => (
-              <Card key={dish.name} className="overflow-hidden shadow-food-card hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div className="aspect-square overflow-hidden">
+            {featuredDishes.map((dish, index) => (
+              <Card
+                key={dish.name}
+                className="overflow-hidden card-hover card-shimmer shadow-food-card stagger-item group"
+                style={{ transform: 'translateY(20px)' }}
+              >
+                <div className="aspect-square overflow-hidden image-zoom-hover relative">
                   <img
                     src={dish.image}
                     alt={dish.name}
-                    className="h-full w-full object-cover transition-transform hover:scale-110 duration-300"
+                    className="h-full w-full object-cover"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
                 <CardContent className="p-4">
-                  <h3 className="font-semibold text-lg mb-1">{dish.name}</h3>
+                  <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">{dish.name}</h3>
                   <p className="text-sm text-muted-foreground mb-2">{dish.restaurant}</p>
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-bold text-primary">${dish.price}</span>
-                    <Button size="sm" onClick={() => handleAddToCart(dish)}>Add to Cart</Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleAddToCart(dish)}
+                      className="button-glow-pulse"
+                    >
+                      Add to Cart
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -190,13 +201,17 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature) => (
-              <Card key={feature.title} className="text-center p-6 border-2 hover:border-primary transition-colors">
+            {features.map((feature, index) => (
+              <Card
+                key={feature.title}
+                className="text-center p-6 border-2 card-hover group hover:border-primary transition-all stagger-item"
+                style={{ transform: 'translateY(20px)' }}
+              >
                 <CardContent className="pt-6">
-                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-4">
-                    <feature.icon className="h-8 w-8 text-primary" />
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-4 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300 animate-float">
+                    <feature.icon className="h-8 w-8 text-primary group-hover:rotate-12 transition-transform duration-300" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">{feature.title}</h3>
                   <p className="text-muted-foreground">{feature.description}</p>
                 </CardContent>
               </Card>

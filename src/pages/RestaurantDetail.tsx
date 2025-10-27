@@ -189,41 +189,42 @@ const RestaurantDetail = () => {
                 {transformedMenuItems
                   .filter((item) => item.category === category)
                   .map((item) => (
-                    <Card key={item.id} className="overflow-hidden">
-                      <div className="aspect-video overflow-hidden">
+                    <Card key={item.id} className="overflow-hidden card-hover card-shimmer shadow-food-card group animate-scale-in">
+                      <div className="aspect-video image-zoom-hover relative">
                         <img
                           src={item.image || getImage(item.category)}
                           alt={item.name}
                           className="h-full w-full object-cover"
                         />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </div>
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <h3 className="font-semibold text-lg">{item.name}</h3>
-                            {item.isVeg && <Badge variant="outline" className="mt-1 text-xs">Veg</Badge>}
+                            <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">{item.name}</h3>
+                            {item.isVeg && <Badge variant="outline" className="mt-1 text-xs animate-bounce-in">Veg</Badge>}
                           </div>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1 group-hover:scale-110 transition-transform">
                             <Star className="h-3 w-3 fill-accent text-accent" />
                             <span className="text-sm font-medium">{item.rating}</span>
                           </div>
                         </div>
                         <p className="text-sm text-muted-foreground mb-3">{item.description}</p>
-                        
+
                         <div className="flex items-center justify-between">
                           <span className="text-lg font-bold text-primary">${item.price}</span>
                           {getCartQuantity(item.id) > 0 ? (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 animate-bounce-in">
                               <Button size="sm" variant="outline" onClick={() => updateQuantity(item.id, getCartQuantity(item.id) - 1)}>
                                 <Minus className="h-4 w-4" />
                               </Button>
                               <span className="w-8 text-center font-medium">{getCartQuantity(item.id)}</span>
-                              <Button size="sm" onClick={() => handleAddToCart(item)}>
+                              <Button size="sm" onClick={() => handleAddToCart(item)} className="button-glow-pulse">
                                 <Plus className="h-4 w-4" />
                               </Button>
                             </div>
                           ) : (
-                            <Button size="sm" onClick={() => handleAddToCart(item)}>
+                            <Button size="sm" onClick={() => handleAddToCart(item)} className="button-glow-pulse">
                               Add
                             </Button>
                           )}
