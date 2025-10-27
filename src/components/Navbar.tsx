@@ -48,7 +48,7 @@ const Navbar = ({ cartItemsCount }: NavbarProps) => {
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary">
             <UtensilsCrossed className="h-6 w-6 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold text-gradient">Feast N Fun</span>
+          <span className="text-xl font-bold text-gradient">Eat2Day</span>
         </Link>
 
         {!isAdmin ? (
